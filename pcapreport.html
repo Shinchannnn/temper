@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PCAP Report</title>
+    <style>
+        /* Your existing styles */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PCAP Report</h1>
+        <div id="templateInfo">
+            <h3>Template Name: <span id="templateName"></span></h3>
+        </div>
+        <table id="pcapReportTable">
+            <thead>
+                <tr>
+                    <th>Provided Key-Value</th>
+                    <th>Matched Key-Value</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="reportTableBody">
+                <!-- Rows will be dynamically inserted -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        async function fetchAnalysisResult() {
+            try {
+                const response = await fetch('/get-analysis-result');
+                const result = await response.json();
+
+                if (response.ok) {
+                    populateTable(result);
+                } else {
+                    alert(result.error);
+                }
+            } catch (error) {
+                console.error("Error fetching analysis result:", error);
+                alert("Failed to fetch analysis result.");
+            }
+        }
+
+        function populateTable(result) {
+            const tableBody = document.getElementById('reportTableBody');
+            const templateElement = document.getElementById('templateName');
+            templateElement.innerText = result.templateName;
+
+            for (const [key, value] of Object.entries(result.providedKeyValues)) {
+                const matchedValue = result.matchedKeyValues[key] || "Not Matched";
+                const matchPercentage = result.matchPercentage;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${key}: ${value}</td>
+                    <td>${key}: ${matchedValue}</td>
+                    <td class="${matchPercentage >= 80 ? 'success' : 'failure'}">${matchPercentage >= 80 ? 'Success' : 'Failure'}</td>
+                `;
+                tableBody.appendChild(row);
+            }
+        }
+
+        window.onload = fetchAnalysisResult;
+    </script>
+</body>
+</html>
